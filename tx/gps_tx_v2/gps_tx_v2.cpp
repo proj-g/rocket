@@ -1,4 +1,4 @@
-    
+#include <Arduino.h>    
 #include <Adafruit_GPS.h>
 #include <SPI.h>
 #include <RH_RF95.h>
@@ -24,6 +24,10 @@ Adafruit_GPS GPS(&GPSSerial);
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
 
 uint32_t timer = millis();
+
+
+void send_data(char send_info);
+
 
 
 void setup()
@@ -103,11 +107,11 @@ void loop() // run over and over again
      memset(lonstr, '\0', sizeof(lonstr));
      memset(altstr, '\0', sizeof(altstr));
      memset(spdstr, '\0', sizeof(spdstr));
-     float measuredvbat = analogRead(VBATPIN);
-  measuredvbat *= 2;    // we divided by 2, so multiply back
-  measuredvbat *= 3.3;  // Multiply by 3.3V, our reference voltage
-  measuredvbat /= 1024; // convert to voltage
-  Serial.print("VBat: " ); Serial.println(measuredvbat);
+//     float measuredvbat = analogRead(VBATPIN);
+//  measuredvbat *= 2;    // we divided by 2, so multiply back
+//  measuredvbat *= 3.3;  // Multiply by 3.3V, our reference voltage
+//  measuredvbat /= 1024; // convert to voltage
+//  Serial.print("VBat: " ); Serial.println(measuredvbat);
   // read data from the GPS in the 'main loop'
   char c = GPS.read();
   // if you want to debug, this is a good time to do it!
@@ -158,4 +162,10 @@ void loop() // run over and over again
   digitalWrite(LED, LOW);
     }
   }
+}
+
+void send_data(char send_info)
+{
+ char a =send_info;
+
 }
