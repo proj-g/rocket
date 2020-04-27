@@ -2,6 +2,8 @@
 #include <Adafruit_GPS.h>
 #include <SPI.h>
 #include <RH_RF95.h>
+#include <string.h>
+using namespace std
 /* for feather32u4 */
 #define RFM95_CS 8
 #define RFM95_RST 4
@@ -26,7 +28,7 @@ RH_RF95 rf95(RFM95_CS, RFM95_INT);
 uint32_t timer = millis();
 
 
-void send_data(char send_info);
+void send_data(char message [50]);
 
 
 
@@ -88,7 +90,8 @@ void setup()
      
   // Request updates on antenna status, comment out to keep quiet
   GPS.sendCommand(PGCMD_ANTENNA);
-
+  string status = (1, GPS INITIATING);
+  send_data(status);
   delay(1000);
   
   // Ask for firmware version
@@ -164,8 +167,10 @@ void loop() // run over and over again
   }
 }
 
-void send_data(char send_info)
+void send_data(char message)
 {
- char a =send_info;
-
+  byte sendLen ;
+  sendLen = strlen(message);
+ rf95.send((uint8_t*)message, sendLen);
+ sprintf()
 }
