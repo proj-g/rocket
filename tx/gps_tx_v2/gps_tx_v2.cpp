@@ -3,7 +3,7 @@
 #include <SPI.h>
 #include <RH_RF95.h>
 #include <string.h>
-using namespace std
+using namespace std;
 /* for feather32u4 */
 #define RFM95_CS 8
 #define RFM95_RST 4
@@ -28,7 +28,7 @@ RH_RF95 rf95(RFM95_CS, RFM95_INT);
 uint32_t timer = millis();
 
 
-void send_data(char message [50]);
+void send_data(char *message [50]);
 
 
 
@@ -60,7 +60,8 @@ void setup()
     while (1);
   }
   Serial.print("Set Freq to: "); Serial.println(RF95_FREQ);
-  
+    char *status = "0, RF_95 INITIATED";
+  send_data(status);
   // Defaults after init are 434.0MHz, 13dBm, Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on
   // The default transmitter power is 13dBm, using PA_BOOST.
   // If you are using RFM95/96/97/98 modules which uses the PA_BOOST transmitter pin, then 
@@ -90,7 +91,7 @@ void setup()
      
   // Request updates on antenna status, comment out to keep quiet
   GPS.sendCommand(PGCMD_ANTENNA);
-  string status = (1, GPS INITIATING);
+  char *status = "1, GPS INITIATING";
   send_data(status);
   delay(1000);
   
@@ -167,10 +168,10 @@ void loop() // run over and over again
   }
 }
 
-void send_data(char message)
+void send_data(char *message)
 {
   byte sendLen ;
   sendLen = strlen(message);
  rf95.send((uint8_t*)message, sendLen);
- sprintf()
+ 
 }
