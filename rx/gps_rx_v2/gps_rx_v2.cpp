@@ -1,7 +1,8 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <RH_RF95.h>
-#include <LiquidCrystal.h>
+#include <LiquidCrystal.h
+// #include <Adafruit_LiquidCrystal.h>
 
 /* for feather32u4 */
 #define RFM95_CS 8
@@ -33,7 +34,8 @@ void setup() {
 
   Serial.begin(9600);
   delay(100);
-    
+  lcd.setCursor(0,2);
+  lcd.print("INITIATE MODULE");  
     // manual reset
   digitalWrite(RFM95_RST, LOW);
   delay(10);
@@ -59,7 +61,8 @@ void setup() {
   // If you are using RFM95/96/97/98 modules which uses the PA_BOOST transmitter pin, then 
   // you can set transmitter powers from 5 to 23 dBm:
   rf95.setTxPower(23, false);
-
+    lcd.setCursor(0,2);
+    lcd.print("RECIEVER INITIATED")
 }
 char buffer[50];
 byte sendLen;
