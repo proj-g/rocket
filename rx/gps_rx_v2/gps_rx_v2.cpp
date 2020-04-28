@@ -1,8 +1,8 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <RH_RF95.h>
-#include <LiquidCrystal.h
-// #include <Adafruit_LiquidCrystal.h>
+// #include <LiquidCrystal.h>
+#include <Adafruit_LiquidCrystal.h>
 
 /* for feather32u4 */
 #define RFM95_CS 8
@@ -17,7 +17,7 @@ RH_RF95 rf95(RFM95_CS, RFM95_INT);
 // Blinky on receipt
 #define LED 13
 // initialize the library with the numbers of the interface pins
-LiquidCrystal lcd(6, 5, 9, 10, 11, 12);
+Adafruit_LiquidCrystal lcd(6, 5, 9, 10, 11, 12);
 
 unsigned long time;
 
@@ -26,7 +26,7 @@ void setup() {
   lcd.begin(20, 4);//number of columns and rows of display
   lcd.print("Starting...");
   lcd.setCursor(0,1);
-  lcd.print("RX Software V2");
+  lcd.print("RX V2");
 
  pinMode(LED, OUTPUT);     
   pinMode(RFM95_RST, OUTPUT);
@@ -61,8 +61,10 @@ void setup() {
   // If you are using RFM95/96/97/98 modules which uses the PA_BOOST transmitter pin, then 
   // you can set transmitter powers from 5 to 23 dBm:
   rf95.setTxPower(23, false);
-    lcd.setCursor(0,2);
-    lcd.print("RECIEVER INITIATED")
+  lcd.setCursor(0,2);
+  lcd.print("RECIEVER INITIATED");
+  lcd.setCursor(0,3);
+  lcd.print("WAITING FOR GPS...");
 }
 char buffer[50];
 byte sendLen;
@@ -76,7 +78,8 @@ void loop() {
   
   if (rf95.available())
   {
-    //lcd.print("Signal Aquired...")
+    
+    // lcd.print("SIGNAL ACQUIRED");
     uint8_t buf[50];
     uint8_t len=sizeof(buf);
   memset(buf, '\0', sizeof(buffer));
@@ -88,8 +91,21 @@ void loop() {
       Serial.print("Message Recieved: ");
       Serial.println((char*)buf);
       
-      char* data= buf;
+      char* data= (char*) buf; // (char*) is called "casting the pointer"
 //      complc= strchr(buf, ',');
+
+// data  = "0,RF_95 INITIATED";
+int message_type = atof(strtok(data, ","));
+Serial.println(message_type);
+switch (message_type)
+{
+case 0:
+  char* message = strtok(0, ",");
+  lcd.setCursor(0,3);
+  lcd.print(message);
+  break;
+
+default:
 
 //Serial.println(buf);
       char* lat= strtok(data, ",");
@@ -168,15 +184,6 @@ Serial.println(spd);
   lcd.print(" M/S");
       digitalWrite(LED, LOW);
       delay(100);
-      // Reply
-//      digitalWrite(LED, HIGH);
-//      time=millis();
-//      dtostrf(time,8,1, timestr);
-//      sprintf(buffer, "time recieved: %s", timestr);
-//     sendLen= strlen(buffer);
-//     Serial.println(buffer);
-//     Serial.println("Replying...");
-//     rf95.send((uint8_t*)buffer, sendLen); 
      digitalWrite(LED, LOW);
       Serial.println(loopnumber);
       lcd.setCursor(0,3);
@@ -184,8 +191,11 @@ Serial.println(spd);
       lcd.print(rf95.lastRssi(), DEC);
       lcd.print(" dB ");
       lcd.print(loopnumber);
+       break;
     }
-    
+   
+ 
+} 
   }
 
 }
