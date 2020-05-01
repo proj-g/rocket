@@ -28,7 +28,7 @@ RH_RF95 rf95(RFM95_CS, RFM95_INT);
 uint32_t timer = millis();
 
 
-void send_data(char *message [50]);
+void send_data(char message [50]);
 
 
 
@@ -60,8 +60,8 @@ void setup()
     while (1);
   }
   Serial.print("Set Freq to: "); Serial.println(RF95_FREQ);
-    char *status = "0, RF_95 INITIATED";
-  send_data(status);
+    char status_rf95[50] = "0, RF_95 TX INITIATED";
+  send_data(status_rf95);
   // Defaults after init are 434.0MHz, 13dBm, Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on
   // The default transmitter power is 13dBm, using PA_BOOST.
   // If you are using RFM95/96/97/98 modules which uses the PA_BOOST transmitter pin, then 
@@ -91,14 +91,14 @@ void setup()
      
   // Request updates on antenna status, comment out to keep quiet
   GPS.sendCommand(PGCMD_ANTENNA);
-  char *status = "1, GPS INITIATING";
-  send_data(status);
+  char status_gps[50] = "0, GPS INITIATING";
+  send_data(status_gps);
   delay(1000);
   
   // Ask for firmware version
   GPSSerial.println(PMTK_Q_RELEASE);
 }
-char buffer [50];
+char buffer[50];
 char latstr[12];
 char lonstr[12];
 char altstr[8];
@@ -145,33 +145,37 @@ void loop() // run over and over again
 //      Serial.print(GPS.longitude, 4); Serial.println(GPS.lon);
 //      Serial.print("Speed (knots): "); Serial.println(GPS.speed);
 //      Serial.print("Angle: "); Serial.println(GPS.angle);
+      int mess_type = 1;
       Serial.print("Altitude: "); Serial.println(GPS.altitude);
       Serial.print("Satellites: "); Serial.println((int)GPS.satellites);    
       dtostrf(GPS.latitude, 9, 4, latstr);
       dtostrf(GPS.longitude, 9, 4, lonstr);
       dtostrf(GPS.speed, 5, 2, spdstr);
       dtostrf(GPS.altitude, 5, 2, altstr);
-      Serial.println(lonstr);
+      // Serial.println(lonstr);
      for (int transtrans = 1; transtrans < 5; transtrans = transtrans + 1)
      {
-      byte sendLen;
+       // Notes for tommorrow, I need to add a message type as int to the start of 
+      // byte sendLen;
 //      sprintf(buffer, "Lat: %s  Lon: %s W", latstr, lonstr);
-      sprintf(buffer, "%s, %c, %s, %c, %s,%s", latstr, GPS.lat, lonstr, GPS.lon, altstr, spdstr);
+      sprintf(buffer, "%i, %s, %c, %s, %c, %s,%s", mess_type, latstr, GPS.lat, lonstr, GPS.lon, altstr, spdstr);
+      send_data(buffer);
 //      Serial.print("Lat: "); Serial.println(latstr);
-      sendLen= strlen(buffer);
- //     Serial.print("Sending: "); Serial.println(buffer);
-      rf95.send((uint8_t*)buffer, sendLen);
-      delay(50);
+      // sendLen= strlen(buffer);
+      // Serial.print("Sending: "); Serial.println(buffer);
+      // rf95.send((uint8_t*)buffer, sendLen);
+      // delay(50);
      }
   digitalWrite(LED, LOW);
     }
   }
 }
 
-void send_data(char *message)
+void send_data(char message [50])
 {
   byte sendLen ;
   sendLen = strlen(message);
  rf95.send((uint8_t*)message, sendLen);
- 
+ Serial.print("Sending: "); Serial.println(message);
+ delay(50);
 }
