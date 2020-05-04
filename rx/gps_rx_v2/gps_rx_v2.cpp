@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <RH_RF95.h>
-// #include <LiquidCrystal.h>
 #include <Adafruit_LiquidCrystal.h>
 
 /* for feather32u4 */
@@ -20,6 +19,8 @@ RH_RF95 rf95(RFM95_CS, RFM95_INT);
 Adafruit_LiquidCrystal lcd(6, 5, 9, 10, 11, 12);
 
 unsigned long time;
+
+void display_coords(char gps_coords[50]);
 
 void setup() {
    // set up the LCD's number of columns and rows:
@@ -71,102 +72,100 @@ byte sendLen;
 char timestr[8];
 int loopnumber=0;
 
-
-void loop() {
-
-
-  
+void loop()
+ {
   if (rf95.available())
   {
-    
-    // lcd.print("SIGNAL ACQUIRED");
-    uint8_t buf[50];
-    uint8_t len=sizeof(buf);
+  // lcd.print("SIGNAL ACQUIRED");
+  uint8_t buf[50];
+  uint8_t len=sizeof(buf);
   memset(buf, '\0', sizeof(buffer));
-    if (rf95.recv(buf, &len))
+  if (rf95.recv(buf, &len))
     {
       loopnumber ++;
       digitalWrite(LED, HIGH);
       //RH_RF95::printBuffer("Recieved: ", buf, len);
       Serial.print("Message Recieved: ");
-      Serial.println((char*)buf);
-      
+      Serial.println((char*)buf); 
       char* data= (char*) buf; // (char*) is called "casting the pointer"
-//      complc= strchr(buf, ',');
+      int message_type = atof(strtok(data, ","));
+      Serial.println(message_type);
+      if (message_type)
+      {
+        display_coords(buffer);
+      }
+      else
+      {
+        char* message = strtok(0, ",");
+        lcd.setCursor(0,3);
+        lcd.print(message);
+      }
+    }
+  }
+}
 
-// data  = "0,RF_95 INITIATED";
-int message_type = atof(strtok(data, ","));
-Serial.println(message_type);
-switch (message_type)
+void display_coords(char gps_coords[50])
 {
-case 0:
-  char* message = strtok(0, ",");
-  lcd.setCursor(0,3);
-  lcd.print(message);
-  break;
+  //Serial.println(buf);
+  char* lat= strtok(0, ",");
+  char* latstr=strtok(0,",");
+  char* lon=strtok(0,",");
+  char* lonstr=strtok(0,",");
+  char* alt=strtok(0,",");
+  char* spd=strtok(0,",");
+  //      Serial.println((char*) lat);
+  //      Serial.println((char*) latstr);
+  //      Serial.println((char*) lonstr);
+  //      Serial.println(alt);
 
-default:
+  //Latitude
+  char* latdegchar= (lat);//Pointer Char type (format DDMMMM.MMMM)
+  char* latminchar= (lat+2);//Exclude first two digits from char array
+  float latmin= atof(latminchar);//convert min to FLOAT
+  float latdegmin= atof(latdegchar);
+  float latdeg=(latdegmin-latmin)/100;//Subtract MIN from DEG
+  float latdegdeci=latdeg+latmin/60;//Convert MIN to deci degree and add to deg
+  Serial.print("Lat: ");
+  Serial.println(latdegdeci, 5);
+  Serial.print("lat: ");
+  Serial.println(lat);
+  Serial.print("latminchar: ");
+  Serial.println(latminchar);
+  Serial.print("latdegmin: ");
+  Serial.println(latdegmin);
+  Serial.print("latdegchar: ");
+  Serial.println(latdegchar);
 
-//Serial.println(buf);
-      char* lat= strtok(data, ",");
-      char* latstr=strtok(0,",");
-      char* lon=strtok(0,",");
-      char* lonstr=strtok(0,",");
-      char* alt=strtok(0,",");
-      char* spd=strtok(0,",");
-//      Serial.println((char*) lat);
-//      Serial.println((char*) latstr);
-//      Serial.println((char*) lonstr);
-//      Serial.println(alt);
 
-//Latitude
-char* latdegchar= (lat);//Pointer Char type (format DDMMMM.MMMM)
-char* latminchar= (lat+2);//Exclude first two digits from char array
-float latmin= atof(latminchar);//convert min to FLOAT
-float latdegmin= atof(latdegchar);
-float latdeg=(latdegmin-latmin)/100;//Subtract MIN from DEG
-float latdegdeci=latdeg+latmin/60;//Convert MIN to deci degree and add to deg
-Serial.print("Lat: ");
-Serial.println(latdegdeci, 5);
-Serial.print("lat: ");
-Serial.println(lat);
-Serial.print("latminchar: ");
-Serial.println(latminchar);
-Serial.print("latdegmin: ");
-Serial.println(latdegmin);
-Serial.print("latdegchar: ");
-Serial.println(latdegchar);
+  //Longitude
+  char* londegchar= lon;
+  char* lonminchar=(lon+4);
+  float lonmin= atof(lonminchar);
+  float londegmin= atof(londegchar);
+  float londeg=(londegmin-lonmin)/100;
+  float londegdeci=londeg+lonmin/60;
+  Serial.print("lon: ");
+  Serial.println(lon);
+  Serial.print("lonminchar: ");
+  Serial.println(lonminchar);
+  Serial.print("londegmin: ");
+  Serial.println(londegmin);
+  Serial.print("londeg: ");
+  Serial.println(londeg);
 
-  
-//Longitude
-char* londegchar= lon;
-char* lonminchar=(lon+4);
-float lonmin= atof(lonminchar);
-float londegmin= atof(londegchar);
-float londeg=(londegmin-lonmin)/100;
-float londegdeci=londeg+lonmin/60;
-Serial.print("lon: ");
-Serial.println(lon);
-Serial.print("lonminchar: ");
-Serial.println(lonminchar);
-Serial.print("londegmin: ");
-Serial.println(londegmin);
-Serial.print("londeg: ");
-Serial.println(londeg);
+  Serial.print("lonmin: ");
+  Serial.println(lonmin);
 
-Serial.print("lonmin: ");
-Serial.println(lonmin);
+  //spd
+  double Dspd= atof(spd);
 
-//spd
-double Dspd= atof(spd);
-
-Serial.print("Lon: ");
-Serial.println(londegdeci, 5);
-Serial.print("Alt:");
-Serial.println(alt);
-Serial.print("Speed: ");
-Serial.println(spd);
-//Print to LCD
+  Serial.print("Lon: ");
+  Serial.println(londegdeci, 5);
+  Serial.print("Alt:");
+  Serial.println(alt);
+  Serial.print("Speed: ");
+  Serial.println(spd);
+  //Print to LCD
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print(latdegdeci, 5);
@@ -182,20 +181,13 @@ Serial.println(spd);
   lcd.print("SPD: ");
   lcd.print(Dspd/1.944);
   lcd.print(" M/S");
-      digitalWrite(LED, LOW);
-      delay(100);
-     digitalWrite(LED, LOW);
-      Serial.println(loopnumber);
-      lcd.setCursor(0,3);
-      lcd.print("RCV: ");
-      lcd.print(rf95.lastRssi(), DEC);
-      lcd.print(" dB ");
-      lcd.print(loopnumber);
-       break;
-    }
-   
- 
-} 
-  }
-
+  digitalWrite(LED, LOW);
+  delay(100);
+  digitalWrite(LED, LOW);
+  Serial.println(loopnumber);
+  lcd.setCursor(0,3);
+  lcd.print("RCV: ");
+  lcd.print(rf95.lastRssi(), DEC);
+  lcd.print(" dB ");
+  lcd.print(loopnumber);
 }
