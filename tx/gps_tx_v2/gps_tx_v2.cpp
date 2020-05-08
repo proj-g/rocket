@@ -29,7 +29,7 @@ uint32_t timer = millis();
 
 
 void send_data(char message [50]);
-
+float check_bat ();
 
 
 void setup()
@@ -90,7 +90,7 @@ void setup()
   // print it out we don't suggest using anything higher than 1 Hz
      
   // Request updates on antenna status, comment out to keep quiet
-  GPS.sendCommand(PGCMD_ANTENNA);
+  GPS.sendCommand(PGCMD_ANTENNA); // explained here: https://learn.adafruit.com/adafruit-ultimate-gps/external-antenna
   char status_gps[50] = "0, GPS INITIATING";
   send_data(status_gps);
   delay(1000);
@@ -98,11 +98,14 @@ void setup()
   // Ask for firmware version
   GPSSerial.println(PMTK_Q_RELEASE);
 }
-char buffer[50];
+char buffer[55];
 char latstr[12];
 char lonstr[12];
 char altstr[8];
 char spdstr[8];
+float bat_volt = 0;
+char bat_volt_str[5];
+
 
 void loop() // run over and over again
 {
@@ -111,11 +114,7 @@ void loop() // run over and over again
      memset(lonstr, '\0', sizeof(lonstr));
      memset(altstr, '\0', sizeof(altstr));
      memset(spdstr, '\0', sizeof(spdstr));
-//     float measuredvbat = analogRead(VBATPIN);
-//  measuredvbat *= 2;    // we divided by 2, so multiply back
-//  measuredvbat *= 3.3;  // Multiply by 3.3V, our reference voltage
-//  measuredvbat /= 1024; // convert to voltage
-//  Serial.print("VBat: " ); Serial.println(measuredvbat);
+
   // read data from the GPS in the 'main loop'
   char c = GPS.read();
   // if you want to debug, this is a good time to do it!
@@ -138,27 +137,34 @@ void loop() // run over and over again
     timer = millis(); // reset the timer
 
     if (GPS.fix) {
-      digitalWrite(LED, HIGH);
+
 //      Serial.print("Location: ");
 //      Serial.print(GPS.latitude, 4); Serial.print(GPS.lat);
 //      Serial.print(", ");
 //      Serial.print(GPS.longitude, 4); Serial.println(GPS.lon);
 //      Serial.print("Speed (knots): "); Serial.println(GPS.speed);
 //      Serial.print("Angle: "); Serial.println(GPS.angle);
-      int mess_type = 1;
-      Serial.print("Altitude: "); Serial.println(GPS.altitude);
-      Serial.print("Satellites: "); Serial.println((int)GPS.satellites);    
-      dtostrf(GPS.latitude, 9, 4, latstr);
+      int mess_type = 1; // indicates valid GPS message to RX unit
+      int num_sats = GPS.satellites;
+      int fix_type = GPS.fixquality_3d;
+      bat_volt = check_bat();
+      // Serial.print("Altitude: "); Serial.println(GPS.altitude);
+      Serial.print("Satellites: "); Serial.println((int)GPS.satellites); 
+      Serial.print("Fix Quality: "); Serial.println((int)GPS.fixquality);
+      Serial.print("3D Fix: "); Serial.println((int)GPS.fixquality_3d);
+      dtostrf(GPS.latitude, 9, 4, latstr); //dtostrf is necessary b/c Arduino doesn't do floats or double in sprintf
       dtostrf(GPS.longitude, 9, 4, lonstr);
       dtostrf(GPS.speed, 5, 2, spdstr);
       dtostrf(GPS.altitude, 5, 2, altstr);
+      dtostrf(bat_volt, 3, 2, bat_volt_str);
+      // dtostrf(check_bat, 4, 3, bat_volt);
       // Serial.println(lonstr);
      for (int transtrans = 1; transtrans < 5; transtrans = transtrans + 1)
      {
-       // Notes for tommorrow, I need to add a message type as int to the start of 
+    
       // byte sendLen;
 //      sprintf(buffer, "Lat: %s  Lon: %s W", latstr, lonstr);
-      sprintf(buffer, "%i, %s, %c, %s, %c, %s,%s", mess_type, latstr, GPS.lat, lonstr, GPS.lon, altstr, spdstr);
+      sprintf(buffer, "%i, %s, %c, %s, %c, %s, %s, %s, %i, %i ", mess_type, latstr, GPS.lat, lonstr, GPS.lon, altstr, spdstr, bat_volt_str, num_sats, fix_type);
       send_data(buffer);
 //      Serial.print("Lat: "); Serial.println(latstr);
       // sendLen= strlen(buffer);
@@ -166,16 +172,35 @@ void loop() // run over and over again
       // rf95.send((uint8_t*)buffer, sendLen);
       // delay(50);
      }
-  digitalWrite(LED, LOW);
+
+  
     }
+    // else {
+    //   int mess_type = 2;
+    //   int num_sats = GPS.satellites;
+    //   sprintf(buffer, "%i, %i", mess_type, num_sats);
+    //   send_data(buffer);
+    //  }
   }
 }
 
-void send_data(char message [50])
+void send_data(char message [55])
 {
+  digitalWrite(LED, HIGH);
   byte sendLen ;
   sendLen = strlen(message);
- rf95.send((uint8_t*)message, sendLen);
- Serial.print("Sending: "); Serial.println(message);
- delay(50);
+  rf95.send((uint8_t*)message, sendLen);
+  Serial.print("Sending: "); Serial.println(message);
+  digitalWrite(LED, LOW);
+  delay(50);
+}
+
+float check_bat()
+{
+  float measuredvbat = analogRead(VBATPIN);
+  measuredvbat *= 2;    // we divided by 2, so multiply back
+  measuredvbat *= 3.3;  // Multiply by 3.3V, our reference voltage
+  measuredvbat /= 1024; // convert to voltage
+  Serial.print("VBat: " ); Serial.println(measuredvbat);
+  return measuredvbat;
 }

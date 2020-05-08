@@ -67,7 +67,7 @@ void setup() {
   lcd.setCursor(0,3);
   lcd.print("WAITING FOR GPS...");
 }
-char buffer[50];
+char buffer[55];
 byte sendLen;
 char timestr[8];
 int loopnumber=0;
