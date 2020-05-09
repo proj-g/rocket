@@ -77,9 +77,10 @@ void loop()
   if (rf95.available())
   {
   // lcd.print("SIGNAL ACQUIRED");
-  uint8_t buf[50];
+  uint8_t buf[60];
   uint8_t len=sizeof(buf);
   memset(buf, '\0', sizeof(buffer));
+  Serial.print("buf:"); Serial.println((char*)buf);
   if (rf95.recv(buf, &len))
     {
       loopnumber ++;
@@ -98,13 +99,14 @@ void loop()
       {
         char* message = strtok(0, ",");
         lcd.setCursor(0,3);
+
         lcd.print(message);
       }
     }
   }
 }
 
-void display_coords(char gps_coords[50])
+void display_coords(char gps_coords[55])
 {
   //Serial.println(buf);
   char* lat= strtok(0, ",");
@@ -113,6 +115,9 @@ void display_coords(char gps_coords[50])
   char* lonstr=strtok(0,",");
   char* alt=strtok(0,",");
   char* spd=strtok(0,",");
+  char* bat_volt=strtok(0,",");
+  char* num_sat=strtok(0,",");
+  char* fix_type = strtok(0,",");
   //      Serial.println((char*) lat);
   //      Serial.println((char*) latstr);
   //      Serial.println((char*) lonstr);
@@ -125,16 +130,16 @@ void display_coords(char gps_coords[50])
   float latdegmin= atof(latdegchar);
   float latdeg=(latdegmin-latmin)/100;//Subtract MIN from DEG
   float latdegdeci=latdeg+latmin/60;//Convert MIN to deci degree and add to deg
-  Serial.print("Lat: ");
-  Serial.println(latdegdeci, 5);
-  Serial.print("lat: ");
-  Serial.println(lat);
-  Serial.print("latminchar: ");
-  Serial.println(latminchar);
-  Serial.print("latdegmin: ");
-  Serial.println(latdegmin);
-  Serial.print("latdegchar: ");
-  Serial.println(latdegchar);
+  // Serial.print("Lat: ");
+  // Serial.println(latdegdeci, 5);
+  // Serial.print("lat: ");
+  // Serial.println(lat);
+  // Serial.print("latminchar: ");
+  // Serial.println(latminchar);
+  // Serial.print("latdegmin: ");
+  // Serial.println(latdegmin);
+  // Serial.print("latdegchar: ");
+  // Serial.println(latdegchar);
 
 
   //Longitude
@@ -144,45 +149,64 @@ void display_coords(char gps_coords[50])
   float londegmin= atof(londegchar);
   float londeg=(londegmin-lonmin)/100;
   float londegdeci=londeg+lonmin/60;
-  Serial.print("lon: ");
-  Serial.println(lon);
-  Serial.print("lonminchar: ");
-  Serial.println(lonminchar);
-  Serial.print("londegmin: ");
-  Serial.println(londegmin);
-  Serial.print("londeg: ");
-  Serial.println(londeg);
-
-  Serial.print("lonmin: ");
-  Serial.println(lonmin);
+  // Serial.print("lon: ");
+  // Serial.println(lon);
+  // Serial.print("lonminchar: ");
+  // Serial.println(lonminchar);
+  // Serial.print("londegmin: ");
+  // Serial.println(londegmin);
+  // Serial.print("londeg: ");
+  // Serial.println(londeg);
+  // Serial.print("lonmin: ");
+  // Serial.println(lonmin);
 
   //spd
-  double Dspd= atof(spd);
+  int int_spd= atoi(spd)/1.944;
 
-  Serial.print("Lon: ");
-  Serial.println(londegdeci, 5);
-  Serial.print("Alt:");
-  Serial.println(alt);
-  Serial.print("Speed: ");
-  Serial.println(spd);
+  //alt
+  int int_alt = atoi(alt);
+
+  //TX Volt
+  double d_batV = atof(bat_volt);
+
+  //Sats
+  int int_sat = atoi(num_sat);
+
+  //Fix
+  int int_fix = atoi(fix_type);
+
+
+  // Serial.print("Lon: ");
+  // Serial.println(londegdeci, 5);
+  // Serial.print("Alt:");
+  // Serial.println(alt);
+  // Serial.print("Speed: ");
+  // Serial.println(spd);
   //Print to LCD
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print(latdegdeci, 5);
-  lcd.print("N ");
+  lcd.print((char*) latstr+1);
+  lcd.print(" ");
   //lcd.setCursor(0, 2);  
   lcd.print(londegdeci, 5);
-  lcd.print("W");
+  lcd.print((char*) lonstr+1);
+  // lcd.print("W");
   lcd.setCursor(0,1);
-  lcd.print("ALT:");
-  lcd.print(alt);
-  lcd.print(" M");
-  lcd.setCursor(0,2);
+  lcd.print("ALT: ");
+  lcd.print(int_alt);
+  lcd.setCursor(10,1);
   lcd.print("SPD: ");
-  lcd.print(Dspd/1.944);
-  lcd.print(" M/S");
+  lcd.print(int_spd);
+  lcd.setCursor(0,2);
+  lcd.print("SAT ");
+  lcd.print(int_sat);
+  lcd.print(" FIX ");
+  lcd.print(int_fix);
+  lcd.print(" BAT ");
+  lcd.print(d_batV);
   digitalWrite(LED, LOW);
-  delay(100);
+  // delay(100);
   digitalWrite(LED, LOW);
   Serial.println(loopnumber);
   lcd.setCursor(0,3);
