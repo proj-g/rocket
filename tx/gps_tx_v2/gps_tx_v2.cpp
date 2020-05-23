@@ -3,6 +3,7 @@
 #include <SPI.h>
 #include <RH_RF95.h>
 #include <string.h>
+//#include <AESLib.h>
 using namespace std;
 /* for feather32u4 */
 #define RFM95_CS 8
@@ -22,6 +23,7 @@ Adafruit_GPS GPS(&GPSSerial);
 // Set GPSECHO to 'false' to turn off echoing the GPS data to the Serial console
 // Set to 'true' if you want to debug and listen to the raw GPS sentences
 #define GPSECHO false
+#define INPUT_BUFFER_LIMIT (128 + 1)
 
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
 
@@ -30,6 +32,24 @@ uint32_t timer = millis();
 
 void send_data(char message [50]);
 float check_bat ();
+// uint16_t encrypt_to_ciphertext(char * msg, uint16_t msgLen, byte iv[]);
+// uint16_t decrypt_to_cleartext(byte msg[], uint16_t msgLen, byte iv[]);
+
+//AESLib aesLib;
+
+// unsigned char cleartext[INPUT_BUFFER_LIMIT] = {0}; // THIS IS INPUT BUFFER (FOR TEXT)
+// unsigned char ciphertext[2*INPUT_BUFFER_LIMIT] = {0}; // THIS IS OUTPUT BUFFER (FOR BASE64-ENCODED ENCRYPTED DATA)
+
+// AES Encryption Key (same as in node-js example)
+// byte aes_key[] = { 0x04, 0x0B, 0x04, 0x05, 0x05, 0x09, 0x04, 0x07, 0x05, 0x05, 0x05, 0x02, 0x05, 0x05, 0x01, 0x00 };
+
+// General initialization vector (same as in node-js example) (you must use your own IV's in production for full security!!!)
+// byte aes_iv[N_BLOCK] = { 0x04, 0x0B, 0x04, 0x05, 0x05, 0x09, 0x04, 0x07, 0x05, 0x05, 0x05, 0x02, 0x05, 0x05, 0x01, 0x00 };
+
+// Generate IV (once)
+// void aes_init() {
+//   aesLib.gen_iv(aes_iv);
+// }
 
 
 void setup()
@@ -39,7 +59,7 @@ void setup()
 
   Serial.begin(9600);
   delay(100);
-
+  // aes_init();
   Serial.println("Feather LoRa TX Test!");
 
   // manual reset
@@ -187,10 +207,13 @@ void loop() // run over and over again
 void send_data(char message [55])
 {
   digitalWrite(LED, HIGH);
-  byte sendLen ;
+  byte sendLen;
+  // uint8_t mess_enc;
   sendLen = strlen(message);
+  // mess_enc = encrypt_to_ciphertext(message, sendLen, aes_iv);
   rf95.send((uint8_t*)message, sendLen);
   Serial.print("Sending: "); Serial.println(message);
+  // Serial.print("Encrypted Message: "); Serial.println(mess_enc);
   digitalWrite(LED, LOW);
   delay(50);
 }
@@ -204,3 +227,18 @@ float check_bat()
   Serial.print("VBat: " ); Serial.println(measuredvbat);
   return measuredvbat;
 }
+
+// uint16_t encrypt_to_ciphertext(char * msg, uint16_t msgLen, byte iv[]) {
+//   Serial.println("Calling encrypt (string)...");
+//   // AESLib.get_cipher64_length(msgLen);
+//   int cipherlength = aesLib.encrypt((byte*)msg, msgLen, (char*)ciphertext, aes_key, sizeof(aes_key), iv);
+//                    // uint16_t encrypt(byte input[], uint16_t input_length, char * output, byte key[],int bits, byte my_iv[]);
+//   return cipherlength;
+// }
+
+// uint16_t decrypt_to_cleartext(byte msg[], uint16_t msgLen, byte iv[]) {
+//   Serial.print("Calling decrypt...; ");
+//   uint16_t dec_bytes = aesLib.decrypt(msg, msgLen, (char*)cleartext, aes_key, sizeof(aes_key), iv);
+//   Serial.print("Decrypted bytes: "); Serial.println(dec_bytes);
+//   return dec_bytes;
+// }
