@@ -12,7 +12,7 @@ using namespace std;
 #define LED 13
 #define VBATPIN A9
 // Change to 434.0 or other frequency, must match RX's freq!
-#define RF95_FREQ 868.0
+#define RF95_FREQ 915.0
 
 // what's the name of the hardware serial port?
 #define GPSSerial Serial1
@@ -88,13 +88,14 @@ void setup()
   // you can set transmitter powers from 5 to 23 dBm:
   rf95.setTxPower(23, false);
   rf95.setModemConfig('Bw125Cr48Sf4096');// Bandwidth = 125 kHz BW, CodingRate 4/8, SpreadingFactor 4096  Slow+long range
-  
+
   //while (!Serial);  // uncomment to have the sketch wait until Serial is ready
   
   // connect at 115200 so we can read the GPS fast enough and echo without dropping chars
   // also spit it out
   Serial.begin(115200);
   Serial.println("GPS TEST PARSED BEGIN");
+  
      
   // 9600 NMEA is the default baud rate for Adafruit MTK GPS's- some use 4800
   GPS.begin(9600);
