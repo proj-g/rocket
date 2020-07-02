@@ -35,6 +35,8 @@ float check_bat ();
 void setup()
 {
     Serial.begin(9600);
+    Serial.println("gps_tx_v3");
+
     // RFM 95 Setup
     pinMode(RFM95_RST, OUTPUT);
     digitalWrite(RFM95_RST, HIGH);
@@ -64,9 +66,9 @@ void setup()
 
     //GPS setup
     GPS.begin(9600); //Set Baud rate
-    GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCONLY); // Select Packet format
+    GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_GGAONLY); // Select Packet format
     GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ); // 1 Hz update rate (1hz is recommended rate)
-    GPS.sendCommand(PGCMD_ANTENNA); // explained here: https://learn.adafruit.com/adafruit-ultimate-gps/external-antenna
+    // GPS.sendCommand(PGCMD_ANTENNA); // explained here: https://learn.adafruit.com/adafruit-ultimate-gps/external-antenna
     char status_gps[50] = "0, GPS INITIATING";
     send_data(status_gps);
     delay(1000);
@@ -81,55 +83,69 @@ char altstr[8];
 char spdstr[8];
 float bat_volt = 0;
 char bat_volt_str[5];
+char oldlatstr[12];
+char oldlonstr[12];
 
 void loop() // run over and over again
 {
-    memset(buffer, '\0', sizeof(buffer));
-    memset(latstr, '\0', sizeof(latstr));
-    memset(lonstr, '\0', sizeof(lonstr));
-    memset(altstr, '\0', sizeof(altstr));
-    memset(spdstr, '\0', sizeof(spdstr));
+    // memset(buffer, '\0', sizeof(buffer));
+    // memset(latstr, '\0', sizeof(latstr));
+    // memset(lonstr, '\0', sizeof(lonstr));
+    // memset(altstr, '\0', sizeof(altstr));
+    // memset(spdstr, '\0', sizeof(spdstr));
+
+
 
     char c = GPS.read();
-    if (GPSECHO)
-        if (c) Serial.print(c);
-          if (GPS.newNMEAreceived()) {
-    // a tricky thing here is if we print the NMEA sentence, or data
-    // we end up not listening and catching other sentences!
-    // so be very wary if using OUTPUT_ALLDATA and trytng to print out data
-    //Serial.println(GPS.lastNMEA()); // this also sets the newNMEAreceived() flag to false
+    // Serial.print("c value: ");
+    // Serial.println(c);
+    if ((c) && (GPSECHO))
+    {Serial.print(c);}
+    // GPS.parse(GPS.lastNMEA);
+    if (GPS.newNMEAreceived()) {
+        // Serial.println("new NMEA recieved.");
+    // // a tricky thing here is if we print the NMEA sentence, or data
+    // // we end up not listening and catching other sentences!
+    // // so be very wary if using OUTPUT_ALLDATA and trytng to print out data
+    // // Serial.println(GPS.lastNMEA()); // this also sets the newNMEAreceived() flag to false
     if (!GPS.parse(GPS.lastNMEA())) // this also sets the newNMEAreceived() flag to false
       return; // we can fail to parse a sentence in which case we should just wait for another
     }
-
+    int num_sats = GPS.satellites;
+    int fix_type = GPS.fixquality_3d;
+     bat_volt = check_bat();
+    //  Serial.print(GPS.seconds);
+    // Serial.print("Altitude: "); Serial.println(GPS.altitude);
+    // Serial.print("Satellites: "); Serial.println((int)GPS.satellites); 
+    // Serial.print("Fix Quality: "); Serial.println((int)GPS.fixquality);
+    // Serial.print("3D Fix: "); Serial.println((int)GPS.fixquality_3d);
+    dtostrf(GPS.latitude, 9, 4, latstr); //dtostrf is necessary b/c Arduino doesn't do floats or double in sprintf
+    dtostrf(GPS.longitude, 9, 4, lonstr);
+    dtostrf(GPS.speed, 5, 2, spdstr);
+    dtostrf(GPS.altitude, 5, 2, altstr);
+    dtostrf(bat_volt, 3, 2, bat_volt_str);
     // if millis() or timer wraps around, we'll just reset it
     if (timer > millis()) timer = millis();
 
     // approximately every 2 seconds or so, print out the current stats
-    if (millis() - timer > 1000) {
+    if (millis() - timer >= 1000) {
     timer = millis(); // reset the timer
 
         if (GPS.fix) {
+          Serial.println("fix");
             int mess_type = 1; // indicates valid GPS message to RX unit
-            int num_sats = GPS.satellites;
-            int fix_type = GPS.fixquality_3d;
-            bat_volt = check_bat();
-            // Serial.print("Altitude: "); Serial.println(GPS.altitude);
-            Serial.print("Satellites: "); Serial.println((int)GPS.satellites); 
-            Serial.print("Fix Quality: "); Serial.println((int)GPS.fixquality);
-            Serial.print("3D Fix: "); Serial.println((int)GPS.fixquality_3d);
-            dtostrf(GPS.latitude, 9, 4, latstr); //dtostrf is necessary b/c Arduino doesn't do floats or double in sprintf
-            dtostrf(GPS.longitude, 9, 4, lonstr);
-            dtostrf(GPS.speed, 5, 2, spdstr);
-            dtostrf(GPS.altitude, 5, 2, altstr);
-            dtostrf(bat_volt, 3, 2, bat_volt_str);
+            strncpy(oldlatstr, latstr, 12);
+            strncpy(oldlonstr, lonstr, 12);
             // dtostrf(check_bat, 4, 3, bat_volt);
             // Serial.println(lonstr);
-            for (int transtrans = 1; transtrans < 5; transtrans = transtrans + 1)
-            {
-                sprintf(buffer, "%i, %s, %c, %s, %c, %s, %s, %s, %i, %i ", mess_type, latstr, GPS.lat, lonstr, GPS.lon, altstr, spdstr, bat_volt_str, num_sats, fix_type);
-                send_data(buffer);
-            }
+            sprintf(buffer, "%i, %s, %c, %s, %c, %s, %s, %s, %i, %i ", mess_type, oldlatstr, GPS.lat, oldlonstr, GPS.lon, altstr, spdstr, bat_volt_str, num_sats, fix_type);
+            send_data(buffer);
+        }
+        else {
+          Serial.println("nofix");
+            int mess_type = 1; // TODO: Change to diff mess type 
+            sprintf(buffer, "%i, %s, %c, %s, %c, %s, %s, %s, %i, %i ", mess_type, oldlatstr, GPS.lat, oldlonstr, GPS.lon, altstr, spdstr, bat_volt_str, num_sats, fix_type);
+            send_data(buffer);
         }
     }
 }
@@ -151,6 +167,6 @@ float check_bat()
   measuredvbat *= 2;    // we divided by 2, so multiply back
   measuredvbat *= 3.3;  // Multiply by 3.3V, our reference voltage
   measuredvbat /= 1024; // convert to voltage
-  Serial.print("VBat: " ); Serial.println(measuredvbat);
+//   Serial.print("VBat: " ); Serial.println(measuredvbat);
   return measuredvbat;
 }
