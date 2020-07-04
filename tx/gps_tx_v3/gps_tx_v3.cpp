@@ -20,7 +20,7 @@ using namespace std;
 // Connect to the GPS on the hardware port
 Adafruit_GPS GPS(&GPSSerial);
 
-#define GPSECHO false
+#define GPSECHO true
 #define INPUT_BUFFER_LIMIT (128 + 1)
 
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
@@ -77,14 +77,15 @@ void setup()
 
 // Setup global variables
 char buffer[55];
-char latstr[12];
-char lonstr[12];
+char latstr[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+char lonstr[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 char altstr[8];
 char spdstr[8];
 float bat_volt = 0;
-char bat_volt_str[5];
-char oldlatstr[12];
-char oldlonstr[12];
+char bat_volt_str[5] = {0, 0, 0, 0};
+char oldlatstr[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+char oldlonstr[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
 
 void loop() // run over and over again
 {
@@ -111,9 +112,15 @@ void loop() // run over and over again
     if (!GPS.parse(GPS.lastNMEA())) // this also sets the newNMEAreceived() flag to false
       return; // we can fail to parse a sentence in which case we should just wait for another
     }
+
+    // if millis() or timer wraps around, we'll just reset it
+    if (timer > millis()) timer = millis();
+
+    // approximately every 2 seconds or so, print out the current stats
+    if (millis() - timer >= 500) {
     int num_sats = GPS.satellites;
-    int fix_type = GPS.fixquality_3d;
-     bat_volt = check_bat();
+    int fix_type = GPS.fixquality;
+    
     //  Serial.print(GPS.seconds);
     // Serial.print("Altitude: "); Serial.println(GPS.altitude);
     // Serial.print("Satellites: "); Serial.println((int)GPS.satellites); 
@@ -124,13 +131,11 @@ void loop() // run over and over again
     dtostrf(GPS.speed, 5, 2, spdstr);
     dtostrf(GPS.altitude, 5, 2, altstr);
     dtostrf(bat_volt, 3, 2, bat_volt_str);
-    // if millis() or timer wraps around, we'll just reset it
-    if (timer > millis()) timer = millis();
-
-    // approximately every 2 seconds or so, print out the current stats
-    if (millis() - timer >= 1000) {
+    // Serial.println("dtostrf complete");
+    // Serial.print("longitude degrees: ");
+    // Serial.println(GPS.longitudeDegrees);
     timer = millis(); // reset the timer
-
+    bat_volt = check_bat();
         if (GPS.fix) {
           Serial.println("fix");
             int mess_type = 1; // indicates valid GPS message to RX unit
@@ -143,8 +148,8 @@ void loop() // run over and over again
         }
         else {
           Serial.println("nofix");
-            int mess_type = 1; // TODO: Change to diff mess type 
-            sprintf(buffer, "%i, %s, %c, %s, %c, %s, %s, %s, %i, %i ", mess_type, oldlatstr, GPS.lat, oldlonstr, GPS.lon, altstr, spdstr, bat_volt_str, num_sats, fix_type);
+            int mess_type = 2; 
+            sprintf(buffer, "%i, %s, N, %s, W, %s, %s, %s, %i, %i ", mess_type, oldlatstr,  oldlonstr,  altstr, spdstr, bat_volt_str, num_sats, fix_type);
             send_data(buffer);
         }
     }
