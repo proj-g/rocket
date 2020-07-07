@@ -12,7 +12,7 @@ using namespace std;
 #define LED 13
 #define VBATPIN A9
 // Change to 434.0 or other frequency, must match RX's freq!
-#define RF95_FREQ 915.0
+#define RF95_FREQ 903.0
 
 // what's the name of the hardware serial port?
 #define GPSSerial Serial1
@@ -63,8 +63,10 @@ void setup()
     send_data(status_rf95);
     rf95.setTxPower(23, false);
     rf95.setModemConfig('Bw125Cr48Sf4096');// Bandwidth = 125 kHz BW, CodingRate 4/8, SpreadingFactor 4096  Slow+long range
+    delay(1000);
 
     //GPS setup
+    digitalWrite(LED, HIGH);
     GPS.begin(9600); //Set Baud rate
     GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_GGAONLY); // Select Packet format
     GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ); // 1 Hz update rate (1hz is recommended rate)
@@ -72,6 +74,7 @@ void setup()
     char status_gps[50] = "0, GPS INITIATING";
     send_data(status_gps);
     delay(1000);
+    digitalWrite(LED, LOW);
     GPSSerial.println(PMTK_Q_RELEASE);  // Ask for firmware version
 }
 
