@@ -1,3 +1,9 @@
 [submodule "code/Library/Adafruit_LiquidCrystal"]
 	path = code/Library/Adafruit_LiquidCrystal
 	url = https://github.com/adafruit/Adafruit_LiquidCrystal.git
+[submodule "code/Adafruit_GPS"]
+	path = code/Adafruit_GPS
+	url = https://github.com/adafruit/Adafruit_GPS.git
+[submodule "code/Library/Adafruit_GPS"]
+	path = code/Library/Adafruit_GPS
+	url = https://github.com/adafruit/Adafruit_GPS.git
