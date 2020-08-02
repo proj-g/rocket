@@ -1,0 +1,3 @@
+[submodule "code/Library/Adafruit_LiquidCrystal"]
+	path = code/Library/Adafruit_LiquidCrystal
+	url = https://github.com/adafruit/Adafruit_LiquidCrystal.git
