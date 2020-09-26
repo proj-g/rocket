@@ -7,3 +7,6 @@
 [submodule "code/Library/Adafruit_GPS"]
 	path = code/Library/Adafruit_GPS
 	url = https://github.com/adafruit/Adafruit_GPS.git
+[submodule "code/Library/ArduinoCore-avr"]
+	path = code/Library/ArduinoCore-avr
+	url = https://github.com/arduino/ArduinoCore-avr.git
