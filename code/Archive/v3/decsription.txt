@@ -1,0 +1,1 @@
+This is the working v3, sends out GPS coords at 2 Hz, never tested in flight, upgraded to v4 to include a relay system
