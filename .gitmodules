@@ -10,3 +10,6 @@
 [submodule "code/Library/ArduinoCore-avr"]
 	path = code/Library/ArduinoCore-avr
 	url = https://github.com/arduino/ArduinoCore-avr.git
+[submodule "code/Library/NeoGPS"]
+	path = code/Library/NeoGPS
+	url = https://github.com/SlashDevin/NeoGPS.git
