@@ -13,3 +13,6 @@
 [submodule "code/Library/NeoGPS"]
 	path = code/Library/NeoGPS
 	url = https://github.com/SlashDevin/NeoGPS.git
+[submodule "code/Library/NeoHWSerial"]
+	path = code/Library/NeoHWSerial
+	url = https://github.com/SlashDevin/NeoHWSerial.git
