@@ -1,3 +1,6 @@
+// Simple GPS read and transmit, based on NEOGPS library.
+//This is presently the best working version.
+
 #include<Arduino.h>
 #include <NMEAGPS.h>
 // #include<Adafruit_GPS.h>
@@ -42,9 +45,9 @@ static void doSomeWork()
   int32_t lon = fix.longitudeL();
   int32_t alt = fix.alt.whole;
   int32_t spd = fix.spd.whole;
-  int32_t pdop = fix.pdop;
-  int32_t laterr = fix.lat_err_cm;
-  int32_t lonerr = fix.lon_err_cm;
+  // int32_t pdop = fix.pdop;
+  // int32_t laterr = fix.lat_err_cm;
+  // int32_t lonerr = fix.lon_err_cm;
   int16_t battvolt = check_bat()*1000;
   // Serial.println(laterr);
   // int32_t sat = gps;
@@ -55,7 +58,8 @@ static void doSomeWork()
   // Serial.println(spd);
   // Serial.println(pdop);
   // Serial.println(battvolt);
-  sprintf(buffer, "%li, %li, %li, %li, %li, %li, %li, %li, %i", time, lat, lon, alt, spd, pdop, laterr, lonerr, battvolt);
+  // sprintf(buffer, "%li, %li, %li, %li, %li, %li, %li, %li, %i", time, lat, lon, alt, spd, pdop, laterr, lonerr, battvolt);
+  sprintf(buffer, "%li, %li, %li, %li, %li, %li, %li, %li, %i", time, lat, lon, alt, spd,  battvolt); //pdop and lat/lon were giving errors.
   // Serial.println(buffer);
   send_data(buffer);
   // digitalWrite(LED, LOW);
@@ -89,6 +93,14 @@ void setup(){
     ;
 
   DEBUG_PORT.print( F("GPS_TX_Version 4\n") );
+
+  digitalWrite(RFM95_RST, HIGH);
+  // manual reset
+  digitalWrite(RFM95_RST, LOW);
+  delay(10);
+  digitalWrite(RFM95_RST, HIGH);
+  delay(10);
+
 
   if(!rf95.init())
     Serial.println("LoRa init failed");

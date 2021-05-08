@@ -1,11 +1,13 @@
+//This was an attempt to use an interrupt based approach with NEOGPS and NEOSerial. It never worked. V4 was the best I could do.
+
 #include <Arduino.h>
 #include <NMEAGPS.h>
 #include <GPSport.h>
 #include <Streamers.h>
 #include <SPI.h>
 #include <RH_RF95.h>
-#include <NeoHWSerial.h>
-#define GPSSerial Serial1
+// #include <NeoHWSerial.h> //Couldn't get this library to work the system could never solve the debugport, 
+#define GPSSerial Serial1 //if using NeoHWSerial this should be NEO serial
 #define LED 13
 #define VBATPIN A9
 #define RFM95_CS 8
@@ -54,7 +56,7 @@ void setup() {
   rf95.setFrequency(txFreq);
   rf95.setTxPower(23, false);
   Serial.println("LORA Module Initiated");
-  gpsPort.attachInterrupt( GPSisr );
+  // gpsPort.attachInterrupt( GPSisr );
   gpsPort.begin( 9600 );
 
 }
@@ -71,3 +73,15 @@ void loop()
     DEBUG_PORT.println( F("DATA OVERRUN: took too long to print GPS data!") );
   }
 }
+
+/*
+Sample of how to enable different sentences in the script
+ gps.send_P( &gpsPort, F("PUBX,40,GLL,0,0,0,0,0,0") );
+  gps.send_P( &gpsPort, F("PUBX,40,GSV,0,0,0,0,0,0") );
+  gps.send_P( &gpsPort, F("PUBX,40,GSA,0,0,0,0,0,0") );
+  gps.send_P( &gpsPort, F("PUBX,40,VTG,0,1,0,0,0,0") );  // <-- only enabled sentence
+  gps.send_P( &gpsPort, F("PUBX,40,ZDA,0,0,0,0,0,0") );
+  gps.send_P( &gpsPort, F("PUBX,40,RMC,0,0,0,0,0,0") );
+  gps.send_P( &gpsPort, F("PUBX,40,GGA,0,0,0,0,0,0") );
+*/
+ 
