@@ -33,6 +33,7 @@ char buffer[128];
 float txFreq = 903.0;
 void send_data(char message [128]);
 float check_bat ();
+static int source_address = 0x0a;
 
 static void doSomeWork()
 {
@@ -59,7 +60,8 @@ static void doSomeWork()
   // Serial.println(pdop);
   // Serial.println(battvolt);
   // sprintf(buffer, "%li, %li, %li, %li, %li, %li, %li, %li, %i", time, lat, lon, alt, spd, pdop, laterr, lonerr, battvolt);
-  sprintf(buffer, "%li, %li, %li, %li, %li, %li, %li, %li, %i", time, lat, lon, alt, spd,  battvolt); //pdop and lat/lon were giving errors.
+  int mess_type = 0x01;
+  sprintf(buffer, "%i, %i, %li, %li, %li, %li, %li, %i", source_address, mess_type, time, lat, lon, alt, spd, battvolt); //pdop and lat/lon were giving errors.
   // Serial.println(buffer);
   send_data(buffer);
   // digitalWrite(LED, LOW);
@@ -75,7 +77,14 @@ static void GPSloop()
   while (gps.available( gpsPort )) {
     fix = gps.read();
     doSomeWork();
+  // fix = gps.read();
+  // doSomeWork();
   }
+
+  // else {
+    
+  //   send_data
+  // }
 
 } // GPSloop
 
@@ -89,8 +98,8 @@ static void GPSloop()
 
 void setup(){
    DEBUG_PORT.begin(9600);
-  while (!DEBUG_PORT)
-    ;
+  // while (!DEBUG_PORT)
+  //   ;
 
   DEBUG_PORT.print( F("GPS_TX_Version 4\n") );
 
@@ -114,7 +123,21 @@ void setup(){
 
 void loop()
 {
-  GPSloop();
+  // if (gps.available()){
+  GPSloop();  
+  // }
+//   while (gps.available( gpsPort )) {
+//     fix = gps.read();
+//     doSomeWork();
+//     GPSloop();
+//   }
+// //   else {
+// //   int mess_type = 0x10;
+// //   // char message[128] = "NO GPS"
+// //   sprintf(buffer, "%i, %i, NO GPS", source_address, mess_type);
+// //   send_data(buffer);
+// //   delay(100);
+// }
 }
 
 void send_data(char message [128])
