@@ -42,7 +42,9 @@ char buffer[128];
 byte sendLen;
 char timestr[8];
 int loopnumber=0;
-void display_coords(char gps_coords[50]);
+// void rcv_coords(char gps_coords[50]);
+void display_coords(char gps_coords[128]);
+void write_display(char message[128]);
 
 void setup() {
   Serial.begin(115200);
@@ -64,7 +66,7 @@ void setup() {
   tft.begin();
   tft.fillScreen(BLACK);
   tft.setRotation(1);
-  tft.setTextColor(GREEN);
+  tft.setTextColor(WHITE);
   tft.setCursor(1, 20);
   tft.setTextSize(2);
 
@@ -79,23 +81,14 @@ void setup() {
 
 void loop() {
   tft.setCursor(1, 1);
-  // void setCursor(uint16_t x0, uint16_t y0);
-  // void setTextColor(RED);
-  // tft.setTextColor(RED);
-  // tft.print("hello world");
-  // tft.setCursor(10,10);
-  // tft.setTextColor(GREEN);
-  // tft.print("pig pig pig");
-  // tft.setCursor(1, 20);
-  // cur_time = millis();
-  // tft.print(cur_time);
+
   if (rf95.available())
   {
   // tft.print("SIGNAL ACQUIRED");
   uint8_t buf[128];
   uint8_t len=sizeof(buf);
   memset(buf, '\0', sizeof(buffer));
-  Serial.print("buf:"); Serial.println((char*)buf);
+  // Serial.print("buf:"); Serial.println((char*)buf);
   if (rf95.recv(buf, &len))
     {
       loopnumber ++;
@@ -104,30 +97,40 @@ void loop() {
       Serial.print("Message Recieved: ");
       Serial.println((char*)buf); 
       char* data= (char*) buf; // (char*) is called "casting the pointer"
-      int message_type = atof(strtok(data, ","));
+      
+      int source_address = atof(strtok(data, ","));
+      int message_type = atof(strtok(0, ","));
       Serial.println(message_type);
-      if (message_type >= 1)
+      if (message_type == 0x01)
       {
         display_coords(buffer);
       }
-      else
+      else if (message_type >= 0x0f)
       {
         char* message = strtok(0, ",");
-        tft.setCursor(0,3);
+        tft.setCursor(0,300);
 
         tft.print(message);
       }
+    }
+    else {
+
     }
   }
   
 }
 
+void write_display(char message[128])
+{}
+
+
 void display_coords(char gps_coords[128])
 {
   //Serial.println(buf);
-  char* lat= strtok(0, ",");
+  char* time = strtok(0, ",");
+  char* latraw= strtok(0, ",");
   // char* latstr=strtok(0,",");
-  char* lon=strtok(0,",");
+  char* lonraw=strtok(0,",");
   // char* lonstr=strtok(0,",");
   char* alt=strtok(0,",");
   char* spd=strtok(0,",");
@@ -140,44 +143,9 @@ void display_coords(char gps_coords[128])
   //      Serial.println(alt);
 
   //Latitude
-
-  float latdeci = atof(lat)/10000000;
-  // char* latdegchar= (lat);//Pointer Char type (format DDMMMM.MMMM)
-  // char* latminchar= (lat+3);//Exclude first two digits from char array
-  // float latmin= atof(latminchar);//convert min to FLOAT
-  // float latdegmin= atof(latdegchar);
-  // float latdeg=(latdegmin-latmin)/100;//Subtract MIN from DEG
-  // float latdegdeci=latdeg+latmin/60;//Convert MIN to deci degree and add to deg
-  // Serial.print("Lat: ");
-  // Serial.println(latdegdeci, 5);
-  // Serial.print("lat: ");
-  // Serial.println(lat);
-  // Serial.print("latminchar: ");
-  // Serial.println(latminchar);
-  // Serial.print("latdegmin: ");
-  // Serial.println(latdegmin);
-  // Serial.print("latdegchar: ");
-  // Serial.println(latdegchar);
-
-
+  float lat = atof(latraw)/10000000;
   //Longitude
-  float londeci = atof(lon)/10000000;
-  // char* londegchar= lon;
-  // char* lonminchar=(lon+4);
-  // float lonmin= atof(lonminchar);
-  // float londegmin= atof(londegchar);
-  // float londeg=(londegmin-lonmin)/100;
-  // float londegdeci=londeg+lonmin/60;
-  // Serial.print("lon: ");
-  // Serial.println(lon);
-  // Serial.print("lonminchar: ");
-  // Serial.println(lonminchar);
-  // Serial.print("londegmin: ");
-  // Serial.println(londegmin);
-  // Serial.print("londeg: ");
-  // Serial.println(londeg);
-  // Serial.print("lonmin: ");
-  // Serial.println(lonmin);
+  float lon = atof(lonraw)/10000000;
 
   //spd
   int int_spd= atoi(spd)/1.944;
@@ -186,21 +154,21 @@ void display_coords(char gps_coords[128])
   int int_alt = atoi(alt);
 
   //TX Volt
-  double d_batV = atof(bat_volt);
+  double d_batV = atof(bat_volt)/1000;
 
   // //Sats
   // int int_sat = atoi(num_sat);
 
   // //Fix
   // int int_fix = atoi(fix_type);
-int screen_width = 480;
-int screen_height = 320;
-int col1 = 0;
-int col2 = 240;
-int line1 = 0;
-int line2 = 20;
-int line3 = 40;
-int line4 = 60;
+  int screen_width = 480;
+  int screen_height = 320;
+  int col1 = 0;
+  int col2 = 240;
+  int line1 = 0;
+  int line2 = 20;
+  int line3 = 40;
+  int line4 = 60;
 
   // Serial.print("Lon: ");
   // Serial.println(londegdeci, 5);
@@ -212,11 +180,11 @@ int line4 = 60;
   // tft.fillScreen(BLACK);
   tft.fillRect(col1, line1, col2-col1, line2-line1, BLACK);
   tft.setCursor(line1, col1);
-  tft.print(latdeci, 5);
+  tft.print(lat, 5);
   // tft.print((char*) latstr+1);
   tft.print(" ");
   //tft.setCursor(0, 2);  
-  tft.print(londeci, 5);
+  tft.print(lon, 5);
   // tft.print((char*) lonstr+1);
   // tft.print("W");
   tft.fillRect(col2, line1, screen_width-col2, line4-line1, BLACK);
@@ -243,8 +211,8 @@ int line4 = 60;
   tft.print(rf95.lastRssi(), DEC);
   tft.print(" dB ");
   tft.print(loopnumber);
-  float oldlat = latdeci;
-  float oldlon =londeci;
-}
+  float oldlat = lat;
+  float oldlon =lon;
+  }
 
 
