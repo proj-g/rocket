@@ -116,6 +116,7 @@ void setup(){
   
   rf95.setFrequency(txFreq);
   rf95.setTxPower(23, false);
+  rf95.setModemConfig('Bw125Cr48Sf4096');// Bandwidth = 125 kHz BW, CodingRate 4/8, SpreadingFactor 4096  Slow+long range
   Serial.println("LORA Module Initiated");
   gpsPort.begin( 9600 );
 }
