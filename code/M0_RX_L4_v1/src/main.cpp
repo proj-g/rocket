@@ -6,6 +6,7 @@
 #include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_HX8357.h>
+#include <RingBufCPP.h>
 
 //RFM95 Setup
 #define RFM95_CS 8
@@ -22,6 +23,7 @@ float Freq = 903.0;
 Adafruit_HX8357 tft = Adafruit_HX8357(TFT_CS, TFT_DC);
 #define SD_CS 4
 #define LED 13
+#define MAX_NUM_ELEMENTS 10
 
 
 // Color definitions
@@ -34,17 +36,37 @@ Adafruit_HX8357 tft = Adafruit_HX8357(TFT_CS, TFT_DC);
 #define YELLOW   0xFFE0 
 #define WHITE    0xFFFF
 
+// struct ringbuf
+// {
+//   int index;
+//   int time_stamp;
+//   float latitude;
+//   float longitude;
+// };
 
-
-
+// RingBufCPP<struct ringbuf, MAX_NUM_ELEMENTS> buf;
+// volatile unsigned int index = 0;
 unsigned long cur_time = 0;
 char buffer[128];
 byte sendLen;
 char timestr[8];
 int loopnumber=0;
+int source_address = 0;
+float oldlat = 0;
+float oldlon = 0;
+float latlist[10];
+float lonlist[10];
+int timelist[10];
+int hist[10][3];
+int time_hist[10];
+int i = 0;
+
+
 // void rcv_coords(char gps_coords[50]);
 void display_coords(char gps_coords[128]);
 void write_display(char message[128]);
+void print_array(int array[10][3]);
+void print_buf_contents();
 
 void setup() {
   Serial.begin(115200);
@@ -57,7 +79,7 @@ void setup() {
   delay(10);
   if(!rf95.init())
     Serial.println("LoRa init failed");
-  
+    
   rf95.setFrequency(Freq);
   rf95.setTxPower(23, false);
   Serial.println("LORA Module Initiated");
@@ -100,10 +122,14 @@ void loop() {
       
       int source_address = atof(strtok(data, ","));
       int message_type = atof(strtok(0, ","));
-      Serial.println(message_type);
-      if (message_type == 0x01)
+      // Serial.println(message_type);
+      // Serial.print("Data: ");
+      // Serial.println(data);
+      // // Serial.print("Buffer: ");
+      // // Serial.println(buffer);
+      if (message_type == 0x01)//0x01 is nominal coord message
       {
-        display_coords(buffer);
+        display_coords(data);
       }
       else if (message_type >= 0x0f)
       {
@@ -113,9 +139,9 @@ void loop() {
         tft.print(message);
       }
     }
+    
     else {
-
-    }
+         }
   }
   
 }
@@ -123,11 +149,29 @@ void loop() {
 void write_display(char message[128])
 {}
 
+void print_array(int array[10][3])
+{
+ //find number of array elements
+//  int array_size= sizeof(array)/sizeof(float);
+//  Serial.println(array_size);
+Serial.println("Print Array: ");
+Serial.println(array[0][0]);
+Serial.print("Array end: ");
+Serial.println(array[9][9]);
+
+  // for (int j=0; j>= 10; j++)
+  // {
+  //  for (int k=0; k>=3; k++){
+  //   Serial.print(array[j][k]);
+  // }
+  // Serial.println();
+// }
+}
 
 void display_coords(char gps_coords[128])
 {
   //Serial.println(buf);
-  char* time = strtok(0, ",");
+  char* timeraw = strtok(0, ",");
   char* latraw= strtok(0, ",");
   // char* latstr=strtok(0,",");
   char* lonraw=strtok(0,",");
@@ -141,26 +185,70 @@ void display_coords(char gps_coords[128])
   //      Serial.println((char*) latstr);
   //      Serial.println((char*) lonstr);
   //      Serial.println(alt);
-
+  //Time
+  int time = atoi(timeraw);
+  Serial.print("Time: ");
+  Serial.println(time);
   //Latitude
   float lat = atof(latraw)/10000000;
+  int lat_int=atoi(latraw);
   //Longitude
   float lon = atof(lonraw)/10000000;
-
+  int lon_int=atoi(lonraw);
   //spd
   int int_spd= atoi(spd)/1.944;
-
   //alt
   int int_alt = atoi(alt);
-
   //TX Volt
   double d_batV = atof(bat_volt)/1000;
-
   // //Sats
   // int int_sat = atoi(num_sat);
-
   // //Fix
   // int int_fix = atoi(fix_type);
+  
+  // if(lat - oldlat >= abs(0.0001) || lon-oldlon >= abs(0.0001)){
+  // for(int i = 0; i< 10; i++){
+    
+    // struct ringbuf gps_data;
+    // // gps_data.index= index++;
+    // gps_data.latitude = lat;
+    // gps_data.longitude = lon;
+    // gps_data.time_stamp = time;
+    // buf.add(gps_data);
+    // print_buf_contents();
+    //   latlist[i] = lat;
+    //   lonlist[i] = lon;
+    //   timelist[i] = time;
+    // hist[i][0]= time;
+    // hist[i][1]= lat_int;
+    // hist[i][2]= lon_int;
+    // Serial.print(hist[0][0]);
+    // Serial.print(hist[0][1]);
+    // Serial.println(hist[0][2]);
+    // Serial.print(hist[1][0]);
+    // Serial.print(hist[1][1]);
+    // Serial.println(hist[1][2]);
+    // Serial.print(hist[2][0]);
+    // Serial.print(hist[2][1]);
+    // Serial.println(hist[2][2]);
+    // Serial.println(hist[1][0]);
+    // Serial.println(hist[2][0]);
+  //   Serial.print("i= ");
+  //   Serial.println(i);
+  //   i++;
+  //   if (i>9){
+  //     i=0;
+  //     // print_array(hist);
+  //     }
+  //   // print_array(hist);
+  //   // }
+
+
+  // // }
+
+
+
+
   int screen_width = 480;
   int screen_height = 320;
   int col1 = 0;
@@ -204,15 +292,59 @@ void display_coords(char gps_coords[128])
   tft.print(d_batV);
   digitalWrite(LED, LOW);
   // delay(100);
-  digitalWrite(LED, LOW);
-  Serial.println(loopnumber);
+  // digitalWrite(LED, LOW);
+  // Serial.println(loopnumber);
   tft.setCursor(col2,line3);
   tft.print("RCV: ");
   tft.print(rf95.lastRssi(), DEC);
   tft.print(" dB ");
   tft.print(loopnumber);
-  float oldlat = lat;
-  float oldlon =lon;
-  }
+  oldlat = lat;
+  Serial.print("Oldlat: ");
+  Serial.println(oldlat, 5);
 
+  // if (lat != 0 && lon !=0)
+  // {
+  //   float oldlat = lat;
+  //   float oldlon = lon;
+  // }
+  // else
+  // {
+  //   tft.fillRect(col1, line2, col2-col1, line3-line2, BLACK);
+  //   tft.setTextColor(RED);
+  //   tft.setCursor(col1, line2);
+  //   tft.print(oldlat, 5);
+  //   tft.print(" ");
+  //   tft.print(oldlon, 5);
+  //   tft.setTextColor(WHITE);
+  // }
+}
 
+// void print_buf_contents()
+// {
+//   struct ringbuf gps_data;
+
+//   Serial.println("\n______Dumping contents of ring buffer_______");
+
+//   // Keep looping until pull() returns NULL
+//   while (buf.pull(&gps_data))
+//   {
+//     //
+//     Serial.print("index: ");
+//     Serial.println(gps_data.index);
+
+//     Serial.print("Latitude: ");
+//     Serial.println(gps_data.latitude);
+
+//     Serial.print("Longitude: ");
+//     Serial.println(gps_data.longitude);
+    
+//     Serial.print("Timestamp: ");
+//     Serial.println(gps_data.time_stamp);
+
+//     Serial.println();
+//   }
+
+//   Serial.println("______Done dumping contents_______");
+
+// }
