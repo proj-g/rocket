@@ -290,6 +290,7 @@ void display_coords(char gps_coords[128])
   // tft.print(int_fix);
   tft.print("BAT ");
   tft.print(d_batV);
+  // tft.print(" ");
   digitalWrite(LED, LOW);
   // delay(100);
   // digitalWrite(LED, LOW);
@@ -299,9 +300,22 @@ void display_coords(char gps_coords[128])
   tft.print(rf95.lastRssi(), DEC);
   tft.print(" dB ");
   tft.print(loopnumber);
-  oldlat = lat;
-  Serial.print("Oldlat: ");
-  Serial.println(oldlat, 5);
+  tft.setCursor(col2,line4);
+  tft.print("Source: ");
+  tft.print(source_address);
+  // if(source_address == 10)
+  // {
+  // tft.fillRect(col2, line3, screen_width-col2, line4-line3, MAGENTA);
+  // }
+  // if(source_address == 15)
+  // {
+  // tft.fillRect(col2, line3, screen_width-col2, line4-line3, CYAN);
+  // }
+  
+  
+  // oldlat = lat;
+  // Serial.print("Oldlat: ");
+  // Serial.println(oldlat, 5);
 
   // if (lat != 0 && lon !=0)
   // {
