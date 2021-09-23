@@ -6,7 +6,7 @@
 #include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_HX8357.h>
-#include <RingBufCPP.h>
+// #include <RingBufCPP.h>
 
 //RFM95 Setup
 #define RFM95_CS 8
@@ -60,6 +60,7 @@ int timelist[10];
 int hist[10][3];
 int time_hist[10];
 int i = 0;
+int recv_data [8];
 
 
 // void rcv_coords(char gps_coords[50]);
@@ -67,6 +68,17 @@ void display_coords(char gps_coords[128]);
 void write_display(char message[128]);
 void print_array(int array[10][3]);
 void print_buf_contents();
+
+void parse_recieve(char* message_data)
+{
+  int i = 0;
+  for (char* p = strtok(message_data,","); p!= NULL; p = strtok(NULL,","))
+  {
+    Serial.println(p);
+    recv_data[i]=atoi(p);
+    i++;
+  }
+}
 
 void setup() {
   Serial.begin(115200);
@@ -119,12 +131,17 @@ void loop() {
       Serial.print("Message Recieved: ");
       Serial.println((char*)buf); 
       char* data= (char*) buf; // (char*) is called "casting the pointer"
+      // parse_recieve((char*)buf);
+      // Serial.print("Recv_data: ");
       
-      int source_address = atof(strtok(data, ","));
+      // for(int i =0; i >= 8; i++)
+      // {
+      // Serial.println(recv_data[i]);
+      // }
+      
+      source_address = atof(strtok(data, ","));
       int message_type = atof(strtok(0, ","));
       // Serial.println(message_type);
-      // Serial.print("Data: ");
-      // Serial.println(data);
       // // Serial.print("Buffer: ");
       // // Serial.println(buffer);
       if (message_type == 0x01)//0x01 is nominal coord message
@@ -257,7 +274,7 @@ void display_coords(char gps_coords[128])
   int line2 = 20;
   int line3 = 40;
   int line4 = 60;
-
+  int line5 = 80;
   // Serial.print("Lon: ");
   // Serial.println(londegdeci, 5);
   // Serial.print("Alt:");
@@ -275,7 +292,7 @@ void display_coords(char gps_coords[128])
   tft.print(lon, 5);
   // tft.print((char*) lonstr+1);
   // tft.print("W");
-  tft.fillRect(col2, line1, screen_width-col2, line4-line1, BLACK);
+  tft.fillRect(col2, line1, screen_width-col2, line5-line1, BLACK);
   tft.setCursor(col2,line1);
   tft.print("ALT: ");
   tft.print(int_alt);
@@ -290,7 +307,9 @@ void display_coords(char gps_coords[128])
   // tft.print(int_fix);
   tft.print("BAT ");
   tft.print(d_batV);
-  // tft.print(" ");
+  tft.print(" ");
+  tft.print("SRC: ");
+  tft.print(source_address);
   digitalWrite(LED, LOW);
   // delay(100);
   // digitalWrite(LED, LOW);
@@ -300,17 +319,15 @@ void display_coords(char gps_coords[128])
   tft.print(rf95.lastRssi(), DEC);
   tft.print(" dB ");
   tft.print(loopnumber);
-  tft.setCursor(col2,line4);
-  tft.print("Source: ");
-  tft.print(source_address);
-  // if(source_address == 10)
-  // {
-  // tft.fillRect(col2, line3, screen_width-col2, line4-line3, MAGENTA);
-  // }
-  // if(source_address == 15)
-  // {
-  // tft.fillRect(col2, line3, screen_width-col2, line4-line3, CYAN);
-  // }
+  // tft.setCursor(col2,line4);
+  if(source_address == 10)
+  {
+  tft.fillRect(col2, line4, screen_width-col2, line5-line4, MAGENTA);
+  }
+  if(source_address == 15)
+  {
+  tft.fillRect(col2, line4, screen_width-col2, line5-line4, CYAN);
+  }
   
   
   // oldlat = lat;
