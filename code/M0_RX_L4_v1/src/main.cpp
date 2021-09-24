@@ -61,6 +61,9 @@ int hist[10][3];
 int time_hist[10];
 int i = 0;
 int recv_data [8];
+bool set_time = false;
+int start_time = 0;
+int rcv_time = 0;
 
 
 // void rcv_coords(char gps_coords[50]);
@@ -103,7 +106,8 @@ void setup() {
   tft.setTextColor(WHITE);
   tft.setCursor(1, 20);
   tft.setTextSize(2);
-
+  
+  set_time = true;
   // void setCursor(uint16_t 0, uint16_t 0);
   // void setTextColor(BLUE);
   // // void setTextColor(uint16_t color, uint16_t BLACK);
@@ -128,8 +132,10 @@ void loop() {
       loopnumber ++;
       digitalWrite(LED, HIGH);
       //RH_RF95::printBuffer("Recieved: ", buf, len);
-      Serial.print("Message Recieved: ");
-      Serial.println((char*)buf); 
+      // Serial.print("Message Recieved: ");
+      Serial.print((char*)buf);
+      Serial.print(", ");
+      Serial.println(rf95.lastRssi(), DEC);
       char* data= (char*) buf; // (char*) is called "casting the pointer"
       // parse_recieve((char*)buf);
       // Serial.print("Recv_data: ");
@@ -171,10 +177,10 @@ void print_array(int array[10][3])
  //find number of array elements
 //  int array_size= sizeof(array)/sizeof(float);
 //  Serial.println(array_size);
-Serial.println("Print Array: ");
-Serial.println(array[0][0]);
-Serial.print("Array end: ");
-Serial.println(array[9][9]);
+// Serial.println("Print Array: ");
+// Serial.println(array[0][0]);
+// Serial.print("Array end: ");
+// Serial.println(array[9][9]);
 
   // for (int j=0; j>= 10; j++)
   // {
@@ -204,20 +210,30 @@ void display_coords(char gps_coords[128])
   //      Serial.println(alt);
   //Time
   int time = atoi(timeraw);
-  Serial.print("Time: ");
-  Serial.println(time);
+  // Serial.print("Time: ");
+  // Serial.println(time);
   //Latitude
   float lat = atof(latraw)/10000000;
-  int lat_int=atoi(latraw);
+  // int lat_int=atoi(latraw);
   //Longitude
   float lon = atof(lonraw)/10000000;
-  int lon_int=atoi(lonraw);
+  // int lon_int=atoi(lonraw);
   //spd
   int int_spd= atoi(spd)/1.944;
   //alt
   int int_alt = atoi(alt);
   //TX Volt
   double d_batV = atof(bat_volt)/1000;
+
+  if( set_time == true)
+  {
+    start_time = time;
+    set_time = false;
+  }
+  else
+  {
+    rcv_time = time - start_time;
+  }
   // //Sats
   // int int_sat = atoi(num_sat);
   // //Fix
@@ -320,16 +336,21 @@ void display_coords(char gps_coords[128])
   tft.print(" dB ");
   tft.print(loopnumber);
   // tft.setCursor(col2,line4);
+  
   if(source_address == 10)
   {
   tft.fillRect(col2, line4, screen_width-col2, line5-line4, MAGENTA);
+
   }
   if(source_address == 15)
   {
   tft.fillRect(col2, line4, screen_width-col2, line5-line4, CYAN);
   }
-  
-  
+  tft.setCursor(col2+5, line4+2);
+  tft.setTextColor(BLACK);
+  tft.print("TIME: ");
+  tft.print(rcv_time);  
+  tft.setTextColor(WHITE);
   // oldlat = lat;
   // Serial.print("Oldlat: ");
   // Serial.println(oldlat, 5);
