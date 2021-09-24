@@ -55,6 +55,7 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   time = millis();
+  memset(buf, '\0', sizeof(buf));
   if(rf95.recv(buf, &len))
   {
   r_data(buf, len);
