@@ -1,0 +1,15 @@
+NOTES
+
+Install virtualenv package: 
+pip install virtualenv
+
+Create a virtual environment: 
+virtualenv mypython
+
+Activate virtual environment:
+source mypython/bin/Activate
+
+source /home/field1/Arduino/gps_code/rocket/code/M0_RX_L4_v1/.venv/bin/activate
+
+Deactivate:
+deactivate 
