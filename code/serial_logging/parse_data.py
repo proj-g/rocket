@@ -1,6 +1,13 @@
 # import csv
 # import pandas 
 import re
+# import matplotlib.pyplot as plt
+
+def pretty_print(data):
+    print("ADD  MESS  TIME  LAT LON ALT SPD BATT RSSI")
+    for k in data:
+        print(k)
+
 
 # print("File to parse: ")
 # file_name = input()
@@ -28,40 +35,17 @@ for line in raw_str:
     # print(line)
     # parsed_str = line.strip('\n')
 # print(lines_list[0:5])
-print(data_arr[0:5])
-# parsed_lines = lines_list.split(',')
-# print(parsed_lines)
-# parsed_str = raw_str.split()
-# print(parsed_str)
-# raw_list  = list(re.split(',', raw_str))
-# clean_str = re.sub(',', '\n', raw_str)
-# # print(raw_list)
-# raw_list = list(clean_str.split("\n"))
-# print(raw_list)
-# itemized_list = []
+# print(data_arr[0:5])
+pretty_print(data_arr)
 
-# removal_list = []
-
-# for w in len(raw_list):
-#     if raw_list[w] == ',':
-#         itemized_list[w] = ','
-# #     else:
-# #         itemized_list[w] = int(raw_list[w])
-
-# itemized_list = list(map(int, raw_list))
-# print(itemized_list)
-
-
-# # itemized_list = [w.replace('\n\n', ',') for w in raw_list]
-# # itemized_list = raw_list.remove(",")
-
-# # with open (file_name) as csv_file:
-# #     csv_reader = csv.reader(csv_file, delimiter=',')
-# #     line_count = 0
-# #     for row in csv_reader:
-# #         print(f)
-
-# # import numpy as np
-# # df = pandas.read_csv(file_name)
-# # print(df)
+#Data array structure:
+# 1: address
+# 2: message type
+# 3: time
+# 4: lat
+# 5: lon
+# 6: alt
+# 7: spd
+# 8: batt_volt
+# 9: RSSI
 
