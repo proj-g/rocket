@@ -1,13 +1,24 @@
 # import csv
 # import pandas 
 import re
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
+import numpy as np
 
 def pretty_print(data):
     print("ADD  MESS  TIME  LAT LON ALT SPD BATT RSSI")
     for k in data:
         print(k)
 
+def plot_latlon(data):
+    lats = data[:,3]/10E6
+    lons = data[:,4]/10E6
+    print(lons)
+    plt.close(1)
+    plt.figure(1)
+    plt.plot(lons, lats, 'bo')
+    plt.ylim(51.85, 51.856)
+    plt.xlim(-111.67, -111.64)
+    plt.show()
 
 # print("File to parse: ")
 # file_name = input()
@@ -35,8 +46,13 @@ for line in raw_str:
     # print(line)
     # parsed_str = line.strip('\n')
 # print(lines_list[0:5])
-# print(data_arr[0:5])
-pretty_print(data_arr)
+print(data_arr[0:5])
+# pretty_print(data_arr)
+# Convert data array to numpy data array:
+data_arr = np.array(data_arr)
+plot_latlon(data_arr)
+# print(data_arr)
+
 
 #Data array structure:
 # 1: address
