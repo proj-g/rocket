@@ -3,6 +3,7 @@
 import re
 import matplotlib.pyplot as plt
 import numpy as np
+import gmplot
 
 def pretty_print(data):
     print("ADD  MESS  TIME  LAT LON ALT SPD BATT RSSI")
@@ -10,15 +11,29 @@ def pretty_print(data):
         print(k)
 
 def plot_latlon(data):
-    lats = data[:,3]/10E6
-    lons = data[:,4]/10E6
-    print(lons)
+    lats_all = data[:,3]/10E6
+    lons_all = data[:,4]/10E6
+    alts_all = data[:,5]
+    lats = lats_all[lats_all != 0]#Cleans all zeros out of array
+    lons = lons_all[lons_all != 0]#Cleans all zeros out of array
+    alts = alts_all[alts_all != 0]
+    print(alts)
     plt.close(1)
     plt.figure(1)
-    plt.plot(lons, lats, 'bo')
-    plt.ylim(51.85, 51.856)
-    plt.xlim(-111.67, -111.64)
+    plt.scatter(lons, lats, c = alts, s=50, cmap='jet')
+    plt.colorbar()
+    # plt.gray()
+    # plt.ylim(51.85, 51.856)
+    # plt.xlim(-111.67, -111.64)
     plt.show()
+
+    plt.figure(2)
+    plt.plot(alts_all)
+    plt.show()
+    # gmap = gmplot.GoogleMapPlotter(lats[0], lons[0], 14, map_type = 'hybrid' )
+    # for i in range(len(lats)-1):
+    #     gmap.marker(lats[i], lons[i])
+    # gmap.draw("rocket_start.html")
 
 # print("File to parse: ")
 # file_name = input()
