@@ -2,13 +2,12 @@
 #include <RH_RF95.h>
 #include <SPI.h>
 
-
 #define RFM95_CS 8
 #define RFM95_RST 4
 #define RFM95_INT 7
 #define RF95_FREQ 903.0
 #define rx_led 13
-#define tx_led 12
+#define tx_led 11
 
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
 
@@ -27,8 +26,6 @@ int send_delay = 500;
 unsigned long time;
 unsigned long rx_time;
 bool new_mess = false;
-
-
 
 void setup() {
   Serial.begin(9600);
@@ -50,6 +47,14 @@ void setup() {
   rf95.setTxPower(23, false);
   rf95.setModemConfig('Bw125Cr48Sf4096');// Bandwidth = 125 kHz BW, CodingRate 4/8, SpreadingFactor 4096  Slow+long range
   Serial.println("LORA Module Initiated");
+  
+  
+  digitalWrite(tx_led, HIGH);
+  digitalWrite(rx_led, HIGH);
+  delay(1000);
+  digitalWrite(tx_led, LOW);
+  digitalWrite(rx_led, LOW);
+  
 }
 
 void loop() {
@@ -81,8 +86,6 @@ void loop() {
   //     Serial.print("relay_mess: ");
   // Serial.println(relay_mess);
   }
-
-
 }
 
 void r_data(uint8_t* message, uint8_t mess_len)
@@ -97,7 +100,7 @@ void r_data(uint8_t* message, uint8_t mess_len)
 
 }
 
-void send_data(char message [128])
+void send_data(char message [88])
 {
   digitalWrite(tx_led, HIGH);
   byte sendLen;
