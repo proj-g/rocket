@@ -3,6 +3,22 @@
 #include <Wire.h>
 #include <SPI.h>
 #include "RF24.h"
+#include "printf.h"
+
+// DEBUG Setup:
+#define DEBUG 1    // SET TO 0 OUT TO REMOVE TRACES
+
+#if DEBUG
+#define D_SerialBegin(...) Serial.begin(__VA_ARGS__);
+#define D_print(...)    Serial.print(__VA_ARGS__)
+#define D_write(...)    Serial.write(__VA_ARGS__)
+#define D_println(...)  Serial.println(__VA_ARGS__)
+#else
+#define D_SerialBegin(...)
+#define D_print(...)
+#define D_write(...)
+#define D_println(...)
+#endif
 
 //GPS setup
 SoftwareSerial mySerial(3, 2);
@@ -29,20 +45,30 @@ bool role = true;  // true = TX role, false = RX role
 char message[128];
 
 void  setup(){
+  Serial.begin(115200);
+  // D_println("Beginning Setup...");
+  delay(1000);
   Wire.begin();
   Wire.beginTransmission(IMU);
   Wire.write(0x6B);  
   Wire.write(0);    
   Wire.endTransmission(true);
-  Serial.begin(115200);
   GPS.begin(9600);
   
   //Initialize Radio
+  D_println("Begin Radio!");
   radio.setPALevel(RF24_PA_LOW);  // RF24_PA_MAX is default. Arduino doesn't have enough power in it's 3v3 pin for Max.
   Serial.print(F("radioNumber = "));
   Serial.println((int)radioNumber);
   radio.setPayloadSize(sizeof(message));
   radio.openWritingPipe(address[radioNumber]);
+  radio.stopListening();  // put radio in TX mode
+  // For radio debugging info
+  printf_begin();             // needed only once for printing details
+  // radio.printDetails();       // (smaller) function that prints raw register values
+  radio.printPrettyDetails(); // (larger) function that prints human readable data
+  
+  D_println("Radio Initialized");
 
 }
 
@@ -62,6 +88,7 @@ void  loop()
 
 void read_accelerometer()
 {
+  D_println("Reading IMU...");
   Wire.beginTransmission(IMU);
   Wire.write(0x3B);  
   Wire.endTransmission(false);
@@ -92,6 +119,7 @@ void read_gps()
       Serial.write(c);
 
     if (GPS.newNMEAreceived()) {
+
       if (!GPS.parse(GPS.lastNMEA()))   // Set the newNMEAreceived() flag to false
         return;  // we can fail to parse a sentence in which case we should just wait for another
   }
@@ -133,7 +161,7 @@ void print_gps()
     Serial.print("Antenna status: "); Serial.println((int)GPS.antenna);
     
     sprintf(message, "%d, %d, %d, %i", GPS.day, GPS.month, GPS.year, GPS.fix );
-
+    D_println(message);
     // send_data(message)
      bool report = radio.write(&message, sizeof(char));
 
