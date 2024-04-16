@@ -12,6 +12,14 @@
 #define RF95_FREQ 903.0
 #define rx_led 13
 #define tx_led 11
+// #define DEBUG
+
+// #ifdef DEBUG
+//   #define DEBUG_PRINT(x)  Serial.print (x)
+//   #define DEBUG_PRINTLN(x)  Serial.println (x)
+// #else
+//   #define DEBUG_PRINT(x)
+// #endif
 
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
 
@@ -31,6 +39,7 @@ int send_delay = 500;
 unsigned long time;
 unsigned long rx_time;
 bool new_mess = false;
+
 
 void setup() {
   Serial.begin(9600);
@@ -66,11 +75,16 @@ void loop() {
   // put your main code here, to run repeatedly:
   time = millis();
   memset(buf, '\0', sizeof(buf));
+  len = buf_len;
+  // DEBUG_PRINT("length of Buffer" );
+  // DEBUG_PRINTLN(buf);
   if(rf95.recv(buf, &len))
   {
   r_data(buf, len);
   rx_time = time;
   new_mess = true;
+  Serial.print("Len is: ");
+  Serial.println(len);
   //Change the buf message
   String str_buf = (char*)buf;
   String buf_sans_address = str_buf.substring(4); //Reads string starting at 4th character
