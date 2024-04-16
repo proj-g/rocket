@@ -1,3 +1,7 @@
+// This code works to repeate messages from teh tx.
+// Current issue (apr 2024), if TX message is incomplete EG all zeros, the buffer length (len) is set too short
+// and misses the ending characters. Forcing len to be a constant cause the code to only send the first two characters
+
 #include <Arduino.h>
 #include <RH_RF95.h>
 #include <SPI.h>
@@ -11,17 +15,18 @@
 
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
 
-char buffer[128];
+const int buf_len = 88;
+char buffer[buf_len];
 float txFreq = 903.0;
-void send_data(char message [128]);
+void send_data(char message [buf_len]);
 void r_data(uint8_t* message, uint8_t mess_len);
 // void receive_data(char incoming [128]);
 float check_bat ();
 static int source_address = 0x0f;
-uint8_t buf[88];
-uint8_t len=sizeof(buf);
+uint8_t buf[buf_len];
+uint8_t len=sizeof(buf);//must be size of the associated buffer
 // uint8_t relay_mess[88];
-char relay_mess[88];
+char relay_mess[buf_len];
 int send_delay = 500;
 unsigned long time;
 unsigned long rx_time;
@@ -83,6 +88,7 @@ void loop() {
   {
     send_data(relay_mess);
     new_mess = false;
+    memset(relay_mess, '\0', sizeof(relay_mess));
   //     Serial.print("relay_mess: ");
   // Serial.println(relay_mess);
   }
@@ -100,7 +106,7 @@ void r_data(uint8_t* message, uint8_t mess_len)
 
 }
 
-void send_data(char message [88])
+void send_data(char message [buf_len])
 {
   digitalWrite(tx_led, HIGH);
   byte sendLen;
