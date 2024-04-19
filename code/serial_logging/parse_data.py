@@ -4,6 +4,7 @@ import re
 import matplotlib.pyplot as plt
 import numpy as np
 import gmplot
+import sys
 
 def pretty_print(data):
     print("ADD  MESS  TIME  LAT LON ALT SPD BATT RSSI")
@@ -14,30 +15,33 @@ def plot_latlon(data):
     lats_all = data[:,3]/10E6
     lons_all = data[:,4]/10E6
     alts_all = data[:,5]
+    speeds_all = data[:,6]
     lats = lats_all[lats_all != 0]#Cleans all zeros out of array
     lons = lons_all[lons_all != 0]#Cleans all zeros out of array
     alts = alts_all[alts_all != 0]
-    print(alts)
+    speeds = speeds_all[lats_all != 0]
+    # print(alts)
     plt.close(1)
     plt.figure(1)
-    plt.scatter(lons, lats, c = alts, s=50, cmap='jet')
+    plt.scatter(lons, lats, c = speeds, s=50, cmap='jet')
     plt.colorbar()
     # plt.gray()
     # plt.ylim(51.85, 51.856)
     # plt.xlim(-111.67, -111.64)
     plt.show()
 
-    plt.figure(2)
-    plt.plot(alts_all)
-    plt.show()
-    # gmap = gmplot.GoogleMapPlotter(lats[0], lons[0], 14, map_type = 'hybrid' )
-    # for i in range(len(lats)-1):
-    #     gmap.marker(lats[i], lons[i])
-    # gmap.draw("rocket_start.html")
+    # plt.figure(2)
+    # plt.plot(alts_all)
+    # plt.show()
+    gmap = gmplot.GoogleMapPlotter(lats[0], lons[0], 14, map_type = 'hybrid' )
+    for i in range(len(lats)-1):
+        gmap.marker(lats[i], lons[i])
+    gmap.draw("owen_ride.html")
 
 # print("File to parse: ")
 # file_name = input()
-file_name = "20210925-113542.txt"
+file_name = sys.argv[1] #Take file name from command line
+# file_name = "20240418-170637.log"
 raw_data = []
 raw_data = open(file_name, 'r')
 
