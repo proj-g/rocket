@@ -83,8 +83,8 @@ void loop() {
   r_data(buf, len);
   rx_time = time;
   new_mess = true;
-  Serial.print("Len is: ");
-  Serial.println(len);
+  // Serial.print("Len is: ");
+  // Serial.println(len);
   //Change the buf message
   String str_buf = (char*)buf;
   String buf_sans_address = str_buf.substring(4); //Reads string starting at 4th character
@@ -112,10 +112,10 @@ void r_data(uint8_t* message, uint8_t mess_len)
 {
     // receive_data();
     digitalWrite(rx_led, HIGH);
-    Serial.print("Message recieved: ");
+    // Serial.print("Message recieved: ");
     Serial.println((char*)message); //buf is global variable, so buf or message work here
-    Serial.print("RSSI: ");
-    Serial.println(rf95.lastRssi(), DEC);
+    // Serial.print("RSSI: ");
+    // Serial.println(rf95.lastRssi(), DEC);
     digitalWrite(rx_led, LOW);
 
 }
@@ -126,7 +126,8 @@ void send_data(char message [buf_len])
   byte sendLen;
   sendLen = strlen(message);
   rf95.send((uint8_t*)message, sendLen);
-  Serial.print("Sending: "); Serial.println(message);
+  // Serial.print("Sending: "); 
+  Serial.println(message);
   digitalWrite(tx_led, LOW);
   delay(50);
 }
