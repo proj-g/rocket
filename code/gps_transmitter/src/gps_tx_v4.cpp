@@ -1,5 +1,5 @@
 // Simple GPS read and transmit, based on NEOGPS library.
-//This is presently the best working version.
+//APR 2024 This is presently the best working version.
 
 #include<Arduino.h>
 #include <NMEAGPS.h>

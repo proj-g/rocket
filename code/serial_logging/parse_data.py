@@ -11,7 +11,7 @@ def pretty_print(data):
     for k in data:
         print(k)
 
-def plot_latlon(data):
+def plot_latlon(data, file_name):
     lats_all = data[:,3]/10E6
     lons_all = data[:,4]/10E6
     alts_all = data[:,5]
@@ -69,7 +69,7 @@ for line in raw_str:
 # pretty_print(data_arr)
 # Convert data array to numpy data array:
 data_arr = np.array(data_arr)
-plot_latlon(data_arr)
+plot_latlon(data_arr, file_name)
 # print(data_arr)
 
 
