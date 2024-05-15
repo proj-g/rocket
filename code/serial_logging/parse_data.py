@@ -65,7 +65,7 @@ for line in raw_str:
     # print(line)
     # parsed_str = line.strip('\n')
 # print(lines_list[0:5])
-print(data_arr[0:5])
+# print(data_arr[0:5])
 # pretty_print(data_arr)
 # Convert data array to numpy data array:
 data_arr = np.array(data_arr)
