@@ -3,5 +3,11 @@
     // for the documentation about the extensions.json format
     "recommendations": [
         "platformio.platformio-ide"
+<<<<<<< HEAD
+=======
+    ],
+    "unwantedRecommendations": [
+        "ms-vscode.cpptools-extension-pack"
+>>>>>>> c6c7d1c6512a2570669fbf022292498a8bfba5ff
     ]
 }

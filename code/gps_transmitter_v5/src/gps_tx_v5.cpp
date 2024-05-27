@@ -1,5 +1,4 @@
 //This was an attempt to use an interrupt based approach with NEOGPS and NEOSerial. It never worked. V4 was the best I could do.
-
 #include <Arduino.h>
 #include <NMEAGPS.h>
 #include <GPSport.h>
