@@ -37,6 +37,7 @@ def plot_latlon(data, file_name):
     for i in range(len(lats)-1):
         gmap.marker(lats[i], lons[i])
     gmap.draw("owen_ride.html")
+    print("Created Gmap file")
 
 # print("File to parse: ")
 # file_name = input()
