@@ -2,7 +2,7 @@
 #include <Adafruit_GPS.h>
 #include <RH_RF95.h>
 #include <Adafruit_SleepyDog.h>
-#include <SoftwareSerial.h>
+// #include <SoftwareSerial.h>
 
 #define GPSSerial Serial1
 #define LED 13
