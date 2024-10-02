@@ -2,11 +2,10 @@
 #include <Adafruit_GPS.h>
 #include <RH_RF95.h>
 #include <Adafruit_SleepyDog.h>
-// #include <SoftwareSerial.h>
 
 #define GPSSerial Serial1
 #define LED 13
-#define VBATPIN A9
+#define VBATPIN A7
 #define RFM95_CS 8
 #define RFM95_RST 4
 #define RFM95_INT 7
@@ -17,7 +16,7 @@ RH_RF95 rf95(RFM95_CS, RFM95_INT);
 
 char buffer[128];
 float txFreq = 903.0;
-unsigned long heartBeatTime = 5000; // Heartbeat interval in milliseconds
+unsigned long heartBeatTime = 3000; // Heartbeat interval in milliseconds
 unsigned long lastHeartbeat = 0;
 bool gpsFix = false;
 void gpsInterrupt();
